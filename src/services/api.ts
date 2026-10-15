@@ -2,7 +2,7 @@ import { Book, BookListResponse, BookUploadPayload, BookUpdatePayload } from '..
 import { generateCoverFromPdf, resolveAssetUrl } from '../lib/pdfUtils';
 import { getOrGenerateThumbnail, generateCreateBookSvgCover } from '../lib/thumbnailManager';
 
-const STORAGE_KEY = 'cf_3d_flipbook_create_collection_v4';
+const STORAGE_KEY = 'cf_3d_flipbook_curriculum2_collection_v1';
 const PDF_BLOB_STORAGE = new Map<string, Blob>();
 const COVER_DATA_STORAGE = new Map<string, string>();
 
@@ -239,7 +239,7 @@ function saveStoredBooks(books: Book[]) {
   }
 }
 
-const ADMIN_PASSWORD_KEY = 'future_curriculum_admin_pw';
+const ADMIN_PASSWORD_KEY = 'create_curriculum2_admin_pw';
 
 export function getAdminPassword(): string {
   try {
