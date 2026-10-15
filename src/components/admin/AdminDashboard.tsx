@@ -107,11 +107,14 @@ export const AdminDashboard: React.FC = () => {
       {/* 1. Header & Quick Action */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-[#e8edf6]">
         <div>
+          <div className="inline-block text-[11px] font-black text-[#586fca] bg-[#eef3ff] border border-[#dce5fb] px-2.5 py-0.5 rounded-full mb-1.5">
+            📖 2번 서재 관리 모드
+          </div>
           <h1 className="text-2xl sm:text-3xl font-black text-[#34476a] tracking-tight">
-            CREATE 연구학교 전자책 관리 센터
+            CREATE 교과전담 수업지도안 관리 센터
           </h1>
           <p className="text-xs sm:text-sm text-[#8a96aa] mt-1">
-            Cloudflare R2 스토리지 및 D1 데이터베이스에 보관된 학년별 단원설계안을 등록, 수정, 삭제합니다.
+            2번 서재에 게시된 교과전담(영어, 체육, 과학, 보건, 통합) 수업지도안 및 길잡이 전자책을 관리합니다.
           </p>
         </div>
 

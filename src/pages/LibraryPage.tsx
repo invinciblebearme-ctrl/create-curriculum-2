@@ -71,25 +71,25 @@ export const LibraryPage: React.FC = () => {
           <div className="relative z-10 max-w-2xl mx-auto">
             {/* Eyebrow Badge */}
             <span className="inline-block text-[11px] font-black tracking-[1.4px] text-[#6378b3] bg-white/70 border border-white rounded-full px-4 py-2 shadow-sm mb-4">
-              CREATE 모형 연구학교 · 성과공유 3D 서재
+              CREATE 모형 연구학교 · 성과공유 3D 서재 [교과전담 수업지도안]
             </span>
 
             {/* Hero Title */}
             <h1 className="text-[32px] sm:text-[46px] leading-[1.38] tracking-[-1.8px] text-[#34476a] font-black mb-3">
               수업의 변화를 여는 <span className="text-[#687de0]">CREATE 모형</span>
               <br />
-              학년별 단원 설계안
+              교과전담 수업지도안
             </h1>
 
             {/* Hero Subtitle */}
             <p className="text-[14px] sm:text-[15px] leading-[1.8] text-[#697b98] mb-6 font-normal">
-              연구학교에서 실천하고 검증한 학년별 단원 설계안을 실제 종이책처럼
+              연구학교에서 실천하고 검증한 교과전담 수업지도안을 실제 종이책처럼
               <br className="hidden sm:inline" /> 한 페이지씩 넘기며 생생하게 읽을 수 있는 온라인 3D 전자책 서재입니다.
             </p>
 
             {/* Chips */}
             <div className="flex justify-center gap-2 sm:gap-2.5 flex-wrap mt-7">
-              {['1·2학년 설계안', '3·4학년 설계안', '5·6학년 설계안', '단면 3D 플립북'].map(
+              {['영어 전담', '체육 전담', '과학 전담', '보건·통합', '단면 3D 플립북'].map(
                 (chip) => (
                   <span
                     key={chip}
@@ -111,7 +111,7 @@ export const LibraryPage: React.FC = () => {
             </div>
             <div>
               <strong className="text-[15px] font-extrabold text-[#34415c] block">
-                CREATE 학년별 단원설계안 및 교수학습 자료집
+                CREATE 교과전담 수업지도안 및 교수학습 자료집
               </strong>
               <p className="text-[12px] text-[#8a96aa] mt-0.5">
                 모든 전자책은 로그인 없이 PC, 태블릿, 스마트폰에서 즉시 한 페이지씩 열람 가능합니다.

@@ -54,7 +54,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="단원설계안 검색..."
+              placeholder="교과전담 수업지도안 검색..."
               className="h-[43px] w-full min-w-0 border-0 bg-transparent outline-none text-[12.5px] text-[#34425e] placeholder-[#9aa7bd]"
             />
             {searchQuery && (
@@ -85,7 +85,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
       {/* Results Label */}
       <div className="flex justify-between items-center pt-2 text-[12px] text-[#8693a9] font-bold">
         <div>
-          총 <strong className="text-[#6179db]">{totalCount}개</strong>의 학년별 단원설계안 자료
+          총 <strong className="text-[#6179db]">{totalCount}개</strong>의 교과전담 수업지도안 자료
         </div>
         {(selectedCategory !== '전체' || searchQuery) && (
           <button

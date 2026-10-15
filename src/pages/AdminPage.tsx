@@ -90,9 +90,12 @@ export const AdminPage: React.FC = () => {
                 <KeyRound className="w-8 h-8 text-[#586fca]" />
               </div>
 
-              <h2 className="text-2xl font-black text-[#34415c] mb-2 tracking-tight">관리자 센터 로그인</h2>
+              <span className="inline-block text-[11px] font-black text-[#687fe0] bg-[#eef3ff] border border-[#dce5fb] px-3 py-1 rounded-full mb-3">
+                📖 [2번 서재] 교과전담 수업지도안
+              </span>
+              <h2 className="text-2xl font-black text-[#34415c] mb-2 tracking-tight">교과전담 지도안 관리자 센터</h2>
               <p className="text-xs text-[#8a96aa] mb-6 leading-relaxed">
-                전자책 등록 및 라이브러리 관리를 위해<br />
+                2번 서재(교과전담 수업지도안) 전자책 관리를 위해<br />
                 관리자 비밀번호를 입력해주세요.
               </p>
 
@@ -164,7 +167,7 @@ export const AdminPage: React.FC = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-[#34415c]">관리자 인증 완료</span>
+                    <span className="text-xs font-black text-[#34415c]">[2번 서재] 교과전담 수업지도안 관리자 인증 완료</span>
                     <span className="text-[10px] font-extrabold bg-[#edf2ff] text-[#586fca] px-2 py-0.5 rounded-full border border-[#dbe4fa]">
                       보안 세션 활성
                     </span>

@@ -29,7 +29,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onSuc
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [category, setCategory] = useState<CategoryOption>('전담교과');
+  const [category, setCategory] = useState<CategoryOption>('영어');
   const [isPublished, setIsPublished] = useState<boolean>(true);
 
   // Cover extraction

@@ -37,16 +37,16 @@ export interface BookUpdatePayload {
 export type CategoryOption = 
   | '전체'
   | '수업설계 길잡이'
-  | '1·2학년'
-  | '3·4학년'
-  | '5·6학년'
-  | '전담교과';
+  | '영어'
+  | '체육'
+  | '과학'
+  | '보건·통합';
 
 export const CATEGORIES: CategoryOption[] = [
   '전체',
   '수업설계 길잡이',
-  '1·2학년',
-  '3·4학년',
-  '5·6학년',
-  '전담교과'
+  '영어',
+  '체육',
+  '과학',
+  '보건·통합'
 ];

@@ -36,7 +36,7 @@ export const Header: React.FC = () => {
               CREATE
             </strong>
             <small className="block text-[9.5px] font-bold tracking-[1.6px] text-[#8b9ab7] mt-0.5">
-              연구학교 성과 공유 플랫폼 · 3D 서재
+              연구학교 성과 공유 플랫폼 · 3D 교과전담 서재
             </small>
           </div>
         </a>
@@ -81,7 +81,7 @@ export const Header: React.FC = () => {
               className="flex items-center gap-1.5 px-4 py-2 rounded-[13px] bg-[#687fe0] hover:bg-[#566ecf] text-white text-xs font-extrabold transition shadow-edu-btn hover:-translate-y-0.5"
             >
               <ShieldCheck className="w-4 h-4 text-[#ffeef4]" />
-              <span>관리자 센터</span>
+              <span>교과전담 관리센터</span>
             </Link>
           )}
         </div>

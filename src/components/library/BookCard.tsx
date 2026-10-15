@@ -75,7 +75,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, index, onRead, onDetai
       </h3>
 
       <div className="text-[#6b7fd0] font-extrabold text-[12px] mb-2 font-sans flex items-center gap-1">
-        <span>학년별 단원설계안 및 교수학습 자료</span>
+        <span>교과전담 수업지도안 및 교수학습 자료</span>
       </div>
 
       {/* 4. Description */}
