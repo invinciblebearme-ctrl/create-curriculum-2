@@ -1,0 +1,7 @@
+name = "create-curriculum-proxy"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+
+routes = [
+  { pattern = "create.allforedu.kr/curriculum*", zone_name = "allforedu.kr" }
+]

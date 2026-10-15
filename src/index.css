@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background: radial-gradient(circle at 0 18%, #eaf4ff 0, transparent 25%),
+                radial-gradient(circle at 100% 43%, #fff0f4 0, transparent 28%),
+                #f8faff;
+    color: #30415e;
+    font-family: 'Nunito', 'Noto Sans KR', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(104, 127, 224, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(104, 127, 224, 0.45);
+}
+
+/* 3D FlipBook StPageFlip Page & Frame */
+.stf__parent {
+  box-shadow: 0 20px 45px -10px rgba(52, 71, 106, 0.35);
+  border-radius: 12px;
+}
+
+.stf__item {
+  background-color: #FFFFFF !important;
+}
