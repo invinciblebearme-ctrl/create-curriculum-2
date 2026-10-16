@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { CATEGORIES, CategoryOption } from '@/types/book';
+import { CATEGORIES, CategoryOption, PRESET_EMOJIS } from '@/types/book';
 import { generateCoverFromPdf, formatBytes } from '@/lib/pdfUtils';
 import { uploadBook } from '@/services/api';
 import {
@@ -12,6 +12,7 @@ import {
   X,
   Sparkles,
   RefreshCw,
+  Smile,
 } from 'lucide-react';
 
 interface UploadModalProps {
@@ -30,6 +31,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onSuc
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [category, setCategory] = useState<CategoryOption>('영어');
+  const [selectedEmoji, setSelectedEmoji] = useState<string>('🔤');
   const [isPublished, setIsPublished] = useState<boolean>(true);
 
   // Cover extraction
@@ -127,6 +129,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onSuc
         title: title.trim(),
         description: description.trim(),
         category,
+        emoji: selectedEmoji || '📖',
         is_published: isPublished,
         pdf_file: pdfFile,
         cover_file: coverToSend,
@@ -298,6 +301,56 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onSuc
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Emoji Selection UI */}
+            <div className="sm:col-span-2">
+              <label className="flex items-center justify-between text-xs font-bold text-[#34415c] mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <Smile className="w-4 h-4 text-[#687fe0]" />
+                  <span>게시물 대표 이모지 선택</span>
+                </span>
+                <span className="text-[11px] text-[#8a96aa] font-medium">카드 및 목록에 표시될 이모지입니다</span>
+              </label>
+
+              <div className="p-3.5 bg-[#f8faff] border border-[#e2e8f4] rounded-[16px] space-y-2.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-[14px] bg-white border border-[#dce5fb] shadow-sm flex items-center justify-center text-2xl shrink-0">
+                    {selectedEmoji || '📖'}
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={selectedEmoji}
+                      onChange={(e) => setSelectedEmoji(e.target.value)}
+                      placeholder="이모지 직접 입력 또는 아래에서 선택"
+                      maxLength={4}
+                      className="w-full px-3 py-2 bg-white border border-[#e2e8f4] rounded-[11px] text-xs font-bold text-[#34415c] focus:outline-none focus:border-[#687fe0]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[11px] font-bold text-[#8a96aa] mb-1.5">추천 이모지 빠른 선택:</div>
+                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                    {PRESET_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => setSelectedEmoji(emoji)}
+                        className={`w-8 h-8 rounded-[10px] text-base flex items-center justify-center transition-all ${
+                          selectedEmoji === emoji
+                            ? 'bg-[#687fe0] text-white shadow-sm scale-110 ring-2 ring-[#687fe0]/30'
+                            : 'bg-white hover:bg-[#eef3ff] border border-[#e2e8f4] text-[#34415c]'
+                        }`}
+                        title={emoji}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>

@@ -7,8 +7,8 @@ interface CategoryBarProps {
   onSelectCategory: (category: string) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  sortOption: 'latest' | 'title';
-  onSortChange: (sort: 'latest' | 'title') => void;
+  sortOption: 'order' | 'latest' | 'title';
+  onSortChange: (sort: 'order' | 'latest' | 'title') => void;
   totalCount: number;
 }
 
@@ -54,7 +54,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="교과전담 수업지도안 검색..."
+              placeholder="단원설계안 검색..."
               className="h-[43px] w-full min-w-0 border-0 bg-transparent outline-none text-[12.5px] text-[#34425e] placeholder-[#9aa7bd]"
             />
             {searchQuery && (
@@ -72,9 +72,10 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
             <ArrowUpDown className="w-3.5 h-3.5 text-[#687fe0]" />
             <select
               value={sortOption}
-              onChange={(e) => onSortChange(e.target.value as 'latest' | 'title')}
+              onChange={(e) => onSortChange(e.target.value as 'order' | 'latest' | 'title')}
               className="bg-transparent focus:outline-none cursor-pointer pr-1 text-[#30415e] font-extrabold"
             >
+              <option value="order">기본 순서</option>
               <option value="latest">최신순</option>
               <option value="title">가나다순</option>
             </select>
@@ -85,7 +86,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
       {/* Results Label */}
       <div className="flex justify-between items-center pt-2 text-[12px] text-[#8693a9] font-bold">
         <div>
-          총 <strong className="text-[#6179db]">{totalCount}개</strong>의 교과전담 수업지도안 자료
+          총 <strong className="text-[#6179db]">{totalCount}개</strong>의 학년별 단원설계안 자료
         </div>
         {(selectedCategory !== '전체' || searchQuery) && (
           <button

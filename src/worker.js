@@ -46,9 +46,9 @@ async function handleApi(request, env) {
       if (!env.DB) return json({ error: 'DB not bound' }, 503, corsHeaders);
       const search = url.searchParams.get('q')?.trim() || '';
       const category = url.searchParams.get('category')?.trim() || '';
-      const sort = url.searchParams.get('sort') || 'latest';
+      const sort = url.searchParams.get('sort') || 'order';
 
-      let query = 'SELECT id, title, description, category, pdf_key, cover_key, file_size, page_count, is_published, created_at, updated_at FROM books WHERE is_published = 1';
+      let query = 'SELECT * FROM books WHERE is_published = 1';
       const params = [];
       if (category && category !== '전체') {
         query += ' AND category = ?';
@@ -58,9 +58,24 @@ async function handleApi(request, env) {
         query += ' AND (title LIKE ? OR description LIKE ?)';
         params.push(`%${search}%`, `%${search}%`);
       }
-      query += (sort === 'title') ? ' ORDER BY title ASC' : ' ORDER BY created_at DESC';
+      if (sort === 'title') {
+        query += ' ORDER BY title ASC';
+      } else if (sort === 'latest') {
+        query += ' ORDER BY created_at DESC';
+      } else {
+        query += ' ORDER BY sort_order ASC, created_at DESC';
+      }
 
-      const { results } = await env.DB.prepare(query).bind(...params).all();
+      let results = [];
+      try {
+        const r = await env.DB.prepare(query).bind(...params).all();
+        results = r.results || [];
+      } catch {
+        const fbQuery = query.replace('ORDER BY sort_order ASC, created_at DESC', 'ORDER BY created_at DESC');
+        const r = await env.DB.prepare(fbQuery).bind(...params).all();
+        results = r.results || [];
+      }
+
       if (method === 'HEAD') {
         return new Response(null, { headers: { 'Content-Type': 'application/json', ...corsHeaders } });
       }
@@ -79,7 +94,6 @@ async function handleApi(request, env) {
         return new Response('Unauthorized', { status: 403, headers: corsHeaders });
       }
 
-      // If static local PDF file, stream directly from ASSETS
       if (book.pdf_key.startsWith('/pdf/')) {
         if (env.ASSETS) {
           const assetUrl = new URL(book.pdf_key, request.url);
@@ -88,7 +102,6 @@ async function handleApi(request, env) {
         return Response.redirect(new URL(book.pdf_key, request.url).toString(), 302);
       }
 
-      // Uploaded PDF in R2
       if (!env.R2_BUCKET) return new Response('R2 not bound', { status: 503, headers: corsHeaders });
       const range = request.headers.get('Range');
       const r2Options = range ? { range: request.headers } : {};
@@ -164,17 +177,44 @@ async function handleApi(request, env) {
     // 6. Admin: GET /api/admin/books
     if (path === '/api/admin/books' && (method === 'GET' || method === 'HEAD')) {
       if (!env.DB) return json({ error: 'DB not bound' }, 503, corsHeaders);
-      const { results } = await env.DB.prepare('SELECT * FROM books ORDER BY created_at DESC').all();
+      let results = [];
+      try {
+        const r = await env.DB.prepare('SELECT * FROM books ORDER BY sort_order ASC, created_at DESC').all();
+        results = r.results || [];
+      } catch {
+        const r = await env.DB.prepare('SELECT * FROM books ORDER BY created_at DESC').all();
+        results = r.results || [];
+      }
       return json({ books: results || [], total: results?.length || 0 }, 200, { ...corsHeaders, 'Cache-Control': 'no-cache, no-store, must-revalidate' });
     }
 
-    // 7. Admin: POST /api/admin/books (Upload)
+    // 7. Admin: POST /api/admin/books/reorder
+    if (path === '/api/admin/books/reorder' && method === 'POST') {
+      if (!env.DB) return json({ error: 'DB not bound' }, 503, corsHeaders);
+      const body = await request.json();
+      const orders = body?.orders || [];
+      for (const item of orders) {
+        if (item.id && item.sort_order !== undefined) {
+          try {
+            await env.DB.prepare("UPDATE books SET sort_order = ?, updated_at = datetime('now') WHERE id = ?")
+              .bind(item.sort_order, item.id)
+              .run();
+          } catch {}
+        }
+      }
+      return json({ success: true, count: orders.length }, 200, corsHeaders);
+    }
+
+    // 8. Admin: POST /api/admin/books (Upload)
     if (path === '/api/admin/books' && method === 'POST') {
       if (!env.DB || !env.R2_BUCKET) return json({ error: 'DB or R2 not bound' }, 503, corsHeaders);
       const formData = await request.formData();
       const title = (formData.get('title') || '').toString().trim();
       const description = (formData.get('description') || '').toString().trim();
       const category = (formData.get('category') || '영어').toString().trim();
+      const emoji = (formData.get('emoji') || '📖').toString().trim();
+      const sortOrderRaw = formData.get('sort_order');
+      const sortOrder = sortOrderRaw !== null && sortOrderRaw !== undefined ? parseInt(sortOrderRaw, 10) : 0;
       const isPublished = formData.get('is_published') === '1' || formData.get('is_published') === 'true' ? 1 : 0;
       const pdfFile = formData.get('pdf_file');
       const coverFile = formData.get('cover_file');
@@ -200,16 +240,25 @@ async function handleApi(request, env) {
         });
       }
 
-      await env.DB.prepare(
-        `INSERT INTO books (id, title, description, category, pdf_key, cover_key, file_size, page_count, is_published, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))`
-      ).bind(bookId, title, description, category, pdfKey, coverKey, pdfFile.size, isPublished).run();
+      try {
+        await env.DB.prepare(
+          `INSERT INTO books (id, title, description, category, emoji, sort_order, pdf_key, cover_key, file_size, page_count, is_published, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))`
+        ).bind(bookId, title, description, category, emoji, sortOrder, pdfKey, coverKey, pdfFile.size, isPublished).run();
+      } catch {
+        await env.DB.prepare(
+          `INSERT INTO books (id, title, description, category, pdf_key, cover_key, file_size, page_count, is_published, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, datetime('now'), datetime('now'))`
+        ).bind(bookId, title, description, category, pdfKey, coverKey, pdfFile.size, isPublished).run();
+      }
 
       const newBook = {
         id: bookId,
         title,
         description,
         category,
+        emoji,
+        sort_order: sortOrder,
         pdf_key: pdfKey,
         cover_key: coverKey,
         file_size: pdfFile.size,
@@ -219,28 +268,74 @@ async function handleApi(request, env) {
       return json({ success: true, book: newBook }, 201, corsHeaders);
     }
 
-    // 8. Admin: PUT /api/admin/books/:id
+    // 9. Admin: PUT /api/admin/books/:id
     const editMatch = path.match(/^\/api\/admin\/books\/([^\/]+)$/);
     if (editMatch && method === 'PUT') {
       const bookId = editMatch[1];
       if (!env.DB) return json({ error: 'DB not bound' }, 503, corsHeaders);
-      const body = await request.json();
+
       const current = await env.DB.prepare('SELECT * FROM books WHERE id = ?').bind(bookId).first();
       if (!current) return json({ error: '도서를 찾을 수 없습니다.' }, 404, corsHeaders);
 
-      const title = body.title !== undefined ? body.title : current.title;
-      const description = body.description !== undefined ? body.description : current.description;
-      const category = body.category !== undefined ? body.category : current.category;
-      const isPublished = body.is_published !== undefined ? (body.is_published ? 1 : 0) : current.is_published;
+      const contentType = request.headers.get('content-type') || '';
+      let title = current.title;
+      let description = current.description;
+      let category = current.category;
+      let emoji = current.emoji || '📖';
+      let sortOrder = current.sort_order ?? 0;
+      let isPublished = current.is_published;
+      let fileSize = current.file_size;
 
-      await env.DB.prepare(
-        "UPDATE books SET title = ?, description = ?, category = ?, is_published = ?, updated_at = datetime('now') WHERE id = ?"
-      ).bind(title, description, category, isPublished, bookId).run();
+      if (contentType.includes('multipart/form-data')) {
+        const formData = await request.formData();
+        if (formData.has('title')) title = formData.get('title').toString().trim();
+        if (formData.has('description')) description = formData.get('description').toString().trim();
+        if (formData.has('category')) category = formData.get('category').toString().trim();
+        if (formData.has('emoji')) emoji = formData.get('emoji').toString().trim();
+        if (formData.has('sort_order')) sortOrder = parseInt(formData.get('sort_order').toString(), 10);
+        if (formData.has('is_published')) isPublished = formData.get('is_published') === '1' || formData.get('is_published') === 'true' ? 1 : 0;
 
-      return json({ success: true, book: { ...current, title, description, category, is_published: isPublished } }, 200, corsHeaders);
+        const newPdfFile = formData.get('pdf_file');
+        if (newPdfFile && newPdfFile.size > 0 && env.R2_BUCKET) {
+          const buffer = await newPdfFile.arrayBuffer();
+          await env.R2_BUCKET.put(current.pdf_key, buffer, {
+            httpMetadata: { contentType: 'application/pdf' },
+          });
+          fileSize = newPdfFile.size;
+        }
+
+        const newCoverFile = formData.get('cover_file');
+        if (newCoverFile && newCoverFile.size > 0 && env.R2_BUCKET) {
+          const buffer = await newCoverFile.arrayBuffer();
+          await env.R2_BUCKET.put(current.cover_key, buffer, {
+            httpMetadata: { contentType: newCoverFile.type || 'image/jpeg' },
+          });
+        }
+      } else {
+        const body = await request.json();
+        if (body.title !== undefined) title = body.title;
+        if (body.description !== undefined) description = body.description;
+        if (body.category !== undefined) category = body.category;
+        if (body.emoji !== undefined) emoji = body.emoji;
+        if (body.sort_order !== undefined) sortOrder = body.sort_order;
+        if (body.is_published !== undefined) isPublished = body.is_published ? 1 : 0;
+      }
+
+      try {
+        await env.DB.prepare(
+          "UPDATE books SET title = ?, description = ?, category = ?, emoji = ?, sort_order = ?, is_published = ?, file_size = ?, updated_at = datetime('now') WHERE id = ?"
+        ).bind(title, description, category, emoji, sortOrder, isPublished, fileSize, bookId).run();
+      } catch {
+        await env.DB.prepare(
+          "UPDATE books SET title = ?, description = ?, category = ?, is_published = ?, file_size = ?, updated_at = datetime('now') WHERE id = ?"
+        ).bind(title, description, category, isPublished, fileSize, bookId).run();
+      }
+
+      const updated = await env.DB.prepare('SELECT * FROM books WHERE id = ?').bind(bookId).first();
+      return json({ success: true, book: updated || { ...current, title, description, category, emoji, sort_order: sortOrder, is_published: isPublished, file_size: fileSize } }, 200, corsHeaders);
     }
 
-    // 9. Admin: DELETE /api/admin/books/:id
+    // 10. Admin: DELETE /api/admin/books/:id
     if (editMatch && method === 'DELETE') {
       const bookId = editMatch[1];
       if (!env.DB) return json({ error: 'DB not bound' }, 503, corsHeaders);

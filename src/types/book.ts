@@ -8,6 +8,8 @@ export interface Book {
   file_size: number;
   page_count: number;
   is_published: number; // 0 or 1
+  emoji?: string;
+  sort_order?: number;
   created_at: string;
   updated_at: string;
 }
@@ -24,6 +26,8 @@ export interface BookUploadPayload {
   is_published: boolean;
   pdf_file: File;
   cover_file?: File | Blob;
+  emoji?: string;
+  sort_order?: number;
 }
 
 export interface BookUpdatePayload {
@@ -32,7 +36,16 @@ export interface BookUpdatePayload {
   category?: string;
   is_published?: boolean;
   cover_file?: File | Blob;
+  pdf_file?: File;
+  emoji?: string;
+  sort_order?: number;
 }
+
+export const PRESET_EMOJIS = [
+  '📖', '🎨', '🌱', '💡', '✨', '🧭', '🔬', '📐',
+  '📝', '🚀', '🌟', '📚', '🎯', '🏅', '🧩', '🧪',
+  '🎵', '⚽', '🌿', '💼', '💻', '🌏', '🏷️', '📌', '🔤'
+];
 
 export type CategoryOption = 
   | '전체'

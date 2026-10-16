@@ -11,7 +11,7 @@ import { BookOpen, Sparkles, AlertCircle, Loader2, BookCheck, Lightbulb, Compass
 export const LibraryPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortOption, setSortOption] = useState<'latest' | 'title'>('latest');
+  const [sortOption, setSortOption] = useState<'order' | 'latest' | 'title'>('order');
 
   // Active book states for viewer
   const [activeReadingBook, setActiveReadingBook] = useState<Book | null>(null);
