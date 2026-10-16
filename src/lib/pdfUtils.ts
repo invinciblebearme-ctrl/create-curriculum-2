@@ -18,9 +18,19 @@ export function resolveAssetUrl(path: string): string {
     return path;
   }
   const cleanPath = path.replace(/^\//, '');
-  const pathname = window.location.pathname;
-  const baseDir = pathname.endsWith('/') ? pathname : pathname.substring(0, pathname.lastIndexOf('/') + 1);
-  return `${window.location.origin}${baseDir}${cleanPath}`;
+
+  if (typeof window !== 'undefined') {
+    if (window.location.pathname.startsWith('/curriculum2')) {
+      return `${window.location.origin}/curriculum2/${cleanPath}`;
+    }
+    if (window.location.pathname.startsWith('/curriculum')) {
+      return `${window.location.origin}/curriculum/${cleanPath}`;
+    }
+    const pathname = window.location.pathname;
+    const baseDir = pathname.endsWith('/') ? pathname : (pathname ? pathname + '/' : '/');
+    return `${window.location.origin}${baseDir}${cleanPath}`;
+  }
+  return `/${cleanPath}`;
 }
 
 

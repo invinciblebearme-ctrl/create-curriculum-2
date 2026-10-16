@@ -189,6 +189,15 @@ export function clearAdminPassword(): void {
   }
 }
 
+
+export const getApiEndpoint = (endpoint: string): string => {
+  const clean = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/curriculum2')) {
+    return '/curriculum2' + clean;
+  }
+  return clean;
+};
+
 let isDevAdminActive = true;
 
 export function setDevAdminMode(enabled: boolean) {
@@ -200,6 +209,7 @@ export function isDevAdminEnabled(): boolean {
 }
 
 async function requestApi<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const targetUrl = getApiEndpoint(url);
   const headers = new Headers(options.headers || {});
   const currentPassword = getAdminPassword();
   if (currentPassword) {
@@ -209,7 +219,7 @@ async function requestApi<T>(url: string, options: RequestInit = {}): Promise<T>
     headers.set('x-dev-admin', 'true');
   }
 
-  const res = await fetch(url, { credentials: 'include', ...options, headers });
+  const res = await fetch(targetUrl, { credentials: 'include', ...options, headers });
   if (!res.ok) {
     const text = await res.text();
     let msg = text;
@@ -237,7 +247,11 @@ export async function fetchBooks(params: {
     if (params.q) searchParams.set('q', params.q);
     if (params.sort) searchParams.set('sort', params.sort);
 
-    return await requestApi<BookListResponse>(`/api/books?${searchParams.toString()}`);
+    const data = await requestApi<BookListResponse>(`/api/books?${searchParams.toString()}`);
+    if (data?.books && (!params.category || params.category === '전체') && !params.q) {
+      saveStoredBooks(data.books);
+    }
+    return data;
   } catch {
     let books = getStoredBooks().filter((b) => b.is_published === 1);
 
@@ -286,7 +300,7 @@ export async function getPdfBlobUrl(id: string): Promise<string> {
 
   // Try real API endpoint
   try {
-    const res = await fetch(`/api/books/${id}/pdf`, {
+    const res = await fetch(getApiEndpoint(`/api/books/${id}/pdf`), {
       headers: isDevAdminActive ? { 'x-dev-admin': 'true' } : {},
     });
     if (res.ok) {
@@ -309,7 +323,7 @@ export async function getCoverImageUrl(book: Book): Promise<string> {
 
   // 1. Try real API first
   try {
-    const res = await fetch(`/api/books/${book.id}/cover`);
+    const res = await fetch(getApiEndpoint(`/api/books/${book.id}/cover`));
     if (res.ok) {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -353,7 +367,7 @@ export async function verifyAdmin(passwordCandidate?: string): Promise<{ authent
 
   // 1. Try real server verify endpoint (POST with password body & header)
   try {
-    const res = await fetch('/api/admin/auth/verify', {
+    const res = await fetch(getApiEndpoint('/api/admin/auth/verify'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -431,7 +445,7 @@ export async function uploadBook(payload: BookUploadPayload): Promise<Book> {
     if (pw) headers['x-admin-password'] = pw;
     if (isDevAdminActive) headers['x-dev-admin'] = 'true';
 
-    const res = await fetch('/api/admin/books', {
+    const res = await fetch(getApiEndpoint('/api/admin/books'), {
       method: 'POST',
       body: formData,
       headers,

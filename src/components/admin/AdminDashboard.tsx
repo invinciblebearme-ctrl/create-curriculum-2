@@ -118,12 +118,20 @@ export const AdminDashboard: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsUploadOpen(true)}
+        <div className="flex items-center gap-2">
+          <a
+            href="#/"
+            className="px-4 py-2.5 rounded-[13px] bg-white border border-[#dce5fb] text-[#586fca] hover:bg-[#f4f7fe] text-xs font-extrabold flex items-center gap-1.5 transition shadow-sm"
+          >
+            <BookOpen className="w-4 h-4" /> 서재 홈 바로가기
+          </a>
+          <button
+            onClick={() => setIsUploadOpen(true)}
           className="px-5 py-2.5 rounded-[13px] bg-[#687fe0] hover:bg-[#566ecf] text-white text-xs font-extrabold shadow-edu-btn flex items-center gap-2 transition hover:-translate-y-0.5"
         >
           <Plus className="w-4 h-4" /> 신규 PDF 등록
         </button>
+        </div>
       </div>
 
       {/* 2. Statistical Metric Cards with create.allforedu.kr Colors */}
@@ -325,7 +333,10 @@ export const AdminDashboard: React.FC = () => {
       <UploadModal
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
-        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['admin-books'] })}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['admin-books'] });
+          queryClient.invalidateQueries({ queryKey: ['books'] });
+        }}
       />
 
       {/* 6. Edit Modal */}
