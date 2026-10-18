@@ -556,6 +556,7 @@ export async function updateBook(id: string, payload: BookUpdatePayload): Promis
       if (payload.sort_order !== undefined) formData.append('sort_order', String(payload.sort_order));
       if (payload.pdf_file) formData.append('pdf_file', payload.pdf_file);
       if (payload.cover_file) formData.append('cover_file', payload.cover_file);
+      if (payload.page_count !== undefined) formData.append('page_count', String(payload.page_count));
 
       const headers: Record<string, string> = {};
       const pw = getAdminPassword();
@@ -598,9 +599,17 @@ export async function updateBook(id: string, payload: BookUpdatePayload): Promis
 
     return updated;
   } catch {
-    const books = getStoredBooks();
-    const index = books.findIndex((b) => b.id === id);
-    if (index === -1) throw new Error('도서를 찾을 수 없습니다.');
+    let books = getStoredBooks();
+    let index = books.findIndex((b) => b.id === id);
+    if (index === -1) {
+      const seed = INITIAL_BOOKS.find((b) => b.id === id);
+      if (seed) {
+        books = [seed, ...books];
+        index = 0;
+      } else {
+        throw new Error('도서를 찾을 수 없습니다.');
+      }
+    }
 
     let newFileSize = books[index].file_size;
     let newPageCount = books[index].page_count;

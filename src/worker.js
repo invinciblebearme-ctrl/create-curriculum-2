@@ -311,8 +311,28 @@ async function handleApi(request, env) {
       const bookId = editMatch[1];
       if (!env.DB) return json({ error: 'DB not bound' }, 503, corsHeaders);
 
-      const current = await env.DB.prepare('SELECT * FROM books WHERE id = ?').bind(bookId).first();
-      if (!current) return json({ error: '도서를 찾을 수 없습니다.' }, 404, corsHeaders);
+      let current = await env.DB.prepare('SELECT * FROM books WHERE id = ?').bind(bookId).first();
+      if (!current) {
+        current = {
+          id: bookId,
+          title: bookId,
+          description: '',
+          category: '수업설계 길잡이',
+          emoji: '📖',
+          sort_order: 1,
+          pdf_key: `books/${bookId}/document.pdf`,
+          cover_key: `covers/${bookId}/cover.jpg`,
+          file_size: 0,
+          page_count: 0,
+          is_published: 1,
+        };
+        try {
+          await env.DB.prepare(
+            `INSERT INTO books (id, title, description, category, emoji, sort_order, pdf_key, cover_key, file_size, page_count, is_published, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`
+          ).bind(bookId, current.title, current.description, current.category, current.emoji, current.sort_order, current.pdf_key, current.cover_key, 0, 0, 1).run();
+        } catch {}
+      }
 
       const contentType = request.headers.get('content-type') || '';
       let title = current.title;
@@ -322,6 +342,9 @@ async function handleApi(request, env) {
       let sortOrder = current.sort_order ?? 0;
       let isPublished = current.is_published;
       let fileSize = current.file_size;
+      let pageCount = current.page_count ?? 0;
+      let pdfKey = current.pdf_key;
+      let coverKey = current.cover_key;
 
       if (contentType.includes('multipart/form-data')) {
         const formData = await request.formData();
@@ -330,23 +353,33 @@ async function handleApi(request, env) {
         if (formData.has('category')) category = formData.get('category').toString().trim();
         if (formData.has('emoji')) emoji = formData.get('emoji').toString().trim();
         if (formData.has('sort_order')) sortOrder = parseInt(formData.get('sort_order').toString(), 10);
+        if (formData.has('page_count')) pageCount = parseInt(formData.get('page_count').toString(), 10);
         if (formData.has('is_published')) isPublished = formData.get('is_published') === '1' || formData.get('is_published') === 'true' ? 1 : 0;
 
         const newPdfFile = formData.get('pdf_file');
         if (newPdfFile && newPdfFile.size > 0 && env.R2_BUCKET) {
           const buffer = await newPdfFile.arrayBuffer();
-          await env.R2_BUCKET.put(current.pdf_key, buffer, {
+          const targetPdfKey = current.pdf_key && !current.pdf_key.startsWith('/pdf/')
+            ? current.pdf_key
+            : `books/${bookId}/doc_${Date.now()}.pdf`;
+          await env.R2_BUCKET.put(targetPdfKey, buffer, {
             httpMetadata: { contentType: 'application/pdf' },
+            customMetadata: { originalName: newPdfFile.name || 'document.pdf' },
           });
           fileSize = newPdfFile.size;
+          pdfKey = targetPdfKey;
         }
 
         const newCoverFile = formData.get('cover_file');
         if (newCoverFile && newCoverFile.size > 0 && env.R2_BUCKET) {
           const buffer = await newCoverFile.arrayBuffer();
-          await env.R2_BUCKET.put(current.cover_key, buffer, {
+          const targetCoverKey = current.cover_key && !current.cover_key.startsWith('/pdf/')
+            ? current.cover_key
+            : `covers/${bookId}/cover_${Date.now()}.jpg`;
+          await env.R2_BUCKET.put(targetCoverKey, buffer, {
             httpMetadata: { contentType: newCoverFile.type || 'image/jpeg' },
           });
+          coverKey = targetCoverKey;
         }
       } else {
         const body = await request.json();
@@ -355,21 +388,28 @@ async function handleApi(request, env) {
         if (body.category !== undefined) category = body.category;
         if (body.emoji !== undefined) emoji = body.emoji;
         if (body.sort_order !== undefined) sortOrder = body.sort_order;
+        if (body.page_count !== undefined) pageCount = body.page_count;
         if (body.is_published !== undefined) isPublished = body.is_published ? 1 : 0;
       }
 
       try {
         await env.DB.prepare(
-          "UPDATE books SET title = ?, description = ?, category = ?, emoji = ?, sort_order = ?, is_published = ?, file_size = ?, updated_at = datetime('now') WHERE id = ?"
-        ).bind(title, description, category, emoji, sortOrder, isPublished, fileSize, bookId).run();
+          `UPDATE books SET title = ?, description = ?, category = ?, emoji = ?, sort_order = ?, is_published = ?, file_size = ?, page_count = ?, pdf_key = ?, cover_key = ?, updated_at = datetime('now') WHERE id = ?`
+        ).bind(title, description, category, emoji, sortOrder, isPublished, fileSize, pageCount, pdfKey, coverKey, bookId).run();
       } catch {
-        await env.DB.prepare(
-          "UPDATE books SET title = ?, description = ?, category = ?, is_published = ?, file_size = ?, updated_at = datetime('now') WHERE id = ?"
-        ).bind(title, description, category, isPublished, fileSize, bookId).run();
+        try {
+          await env.DB.prepare(
+            `UPDATE books SET title = ?, description = ?, category = ?, is_published = ?, file_size = ?, page_count = ?, pdf_key = ?, cover_key = ?, updated_at = datetime('now') WHERE id = ?`
+          ).bind(title, description, category, isPublished, fileSize, pageCount, pdfKey, coverKey, bookId).run();
+        } catch {
+          await env.DB.prepare(
+            `UPDATE books SET title = ?, description = ?, category = ?, is_published = ?, file_size = ?, updated_at = datetime('now') WHERE id = ?`
+          ).bind(title, description, category, isPublished, fileSize, bookId).run();
+        }
       }
 
       const updated = await env.DB.prepare('SELECT * FROM books WHERE id = ?').bind(bookId).first();
-      return json({ success: true, book: updated || { ...current, title, description, category, emoji, sort_order: sortOrder, is_published: isPublished, file_size: fileSize } }, 200, corsHeaders);
+      return json({ success: true, book: updated || { ...current, title, description, category, emoji, sort_order: sortOrder, is_published: isPublished, file_size: fileSize, page_count: pageCount, pdf_key: pdfKey, cover_key: coverKey } }, 200, corsHeaders);
     }
 
     // 10. Admin: DELETE /api/admin/books/:id

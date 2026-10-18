@@ -28,6 +28,7 @@ export interface BookUploadPayload {
   cover_file?: File | Blob;
   emoji?: string;
   sort_order?: number;
+  page_count?: number;
 }
 
 export interface BookUpdatePayload {
@@ -39,6 +40,7 @@ export interface BookUpdatePayload {
   pdf_file?: File;
   emoji?: string;
   sort_order?: number;
+  page_count?: number;
 }
 
 export const PRESET_EMOJIS = [

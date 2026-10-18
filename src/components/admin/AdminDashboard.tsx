@@ -591,6 +591,7 @@ const EditBookModal: React.FC<EditBookModalProps> = ({ book, onClose, onSave, is
 
   // PDF replacement state
   const [newPdfFile, setNewPdfFile] = useState<File | null>(null);
+  const [newPageCount, setNewPageCount] = useState<number | null>(null);
   const [autoUpdateCover, setAutoUpdateCover] = useState<boolean>(true);
   const [isExtractingCover, setIsExtractingCover] = useState<boolean>(false);
   const [newCoverBlob, setNewCoverBlob] = useState<Blob | null>(null);
@@ -614,6 +615,7 @@ const EditBookModal: React.FC<EditBookModalProps> = ({ book, onClose, onSave, is
       setIsExtractingCover(true);
       try {
         const extracted = await generateCoverFromPdf(file);
+      setNewPageCount(extracted.pageCount);
         setNewCoverBlob(extracted.coverBlob);
         setNewCoverPreview(extracted.coverDataUrl);
       } catch (err) {
@@ -634,6 +636,7 @@ const EditBookModal: React.FC<EditBookModalProps> = ({ book, onClose, onSave, is
       is_published: isPublished,
       pdf_file: newPdfFile || undefined,
       cover_file: (autoUpdateCover && newCoverBlob) ? newCoverBlob : undefined,
+      page_count: newPageCount ?? undefined,
     });
   };
 
@@ -782,6 +785,22 @@ const EditBookModal: React.FC<EditBookModalProps> = ({ book, onClose, onSave, is
                     />
                     새 PDF 1페이지로 표지 썸네일도 자동 갱신
                   </label>
+
+                  {newCoverPreview && autoUpdateCover && (
+                    <div className="flex items-center gap-3 bg-white p-2.5 rounded-[11px] border border-[#d5edd9] mt-2">
+                      <img
+                        src={newCoverPreview}
+                        alt="새 표지 미리보기"
+                        className="w-10 h-14 object-cover rounded-[6px] shadow-xs border border-[#e2e8f4]"
+                      />
+                      <div className="text-[11px] text-[#2e7d5b] font-bold">
+                        <div>✓ 새 PDF 1페이지 표지 자동 추출 완료</div>
+                        <div className="text-[10px] text-[#8a96aa] font-medium mt-0.5">
+                          {newPageCount ? `총 ${newPageCount}페이지 확인됨` : '표지 갱신 준비 완료'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
