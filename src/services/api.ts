@@ -313,18 +313,20 @@ export async function fetchBookById(id: string): Promise<Book> {
     return await requestApi<Book>(`/api/books/${id}`);
   } catch {
     const books = getStoredBooks();
-    const book = books.find((b) => b.id === id);
+    const book = books.find((b) => b.id === id) || INITIAL_BOOKS.find((b) => b.id === id);
     if (!book) throw new Error('도서를 찾을 수 없습니다.');
     return book;
   }
 }
 
 export async function getPdfBlobUrl(id: string): Promise<string> {
+  // 1. Uploaded blob in memory
   const cachedBlob = PDF_BLOB_STORAGE.get(id);
   if (cachedBlob) {
     return URL.createObjectURL(cachedBlob);
   }
 
+  // 2. Try real API streaming endpoint
   try {
     const res = await fetch(getApiEndpoint(`/api/books/${id}/pdf`), {
       headers: isDevAdminActive ? { 'x-dev-admin': 'true' } : {},
@@ -335,10 +337,31 @@ export async function getPdfBlobUrl(id: string): Promise<string> {
     }
   } catch { }
 
+  // 3. Fallback to static asset URL
   const books = getStoredBooks();
-  const book = books.find((b) => b.id === id);
+  const book = books.find((b) => b.id === id) || INITIAL_BOOKS.find((b) => b.id === id);
   if (book?.pdf_key) {
-    return resolveAssetUrl(book.pdf_key);
+    const assetUrl = resolveAssetUrl(book.pdf_key);
+    try {
+      const res = await fetch(assetUrl);
+      if (res.ok) {
+        const blob = await res.blob();
+        return URL.createObjectURL(blob);
+      }
+    } catch { }
+
+    // Fallback: try alternate encoding (decoded vs encoded)
+    try {
+      const altKey = book.pdf_key.includes('%') ? decodeURIComponent(book.pdf_key) : encodeURI(book.pdf_key);
+      const altUrl = resolveAssetUrl(altKey);
+      const res2 = await fetch(altUrl);
+      if (res2.ok) {
+        const blob = await res2.blob();
+        return URL.createObjectURL(blob);
+      }
+    } catch { }
+
+    return assetUrl;
   }
 
   throw new Error('PDF 파일을 찾을 수 없습니다.');

@@ -28,6 +28,7 @@ import {
   Smile,
   Upload,
   RefreshCw,
+  Share2,
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -139,6 +140,14 @@ export const AdminDashboard: React.FC = () => {
     } finally {
       setIsSavingOrder(false);
     }
+  };
+
+  // Copy Direct Viewer Link (Works even when unlisted/hidden)
+  const handleCopyDirectLink = (book: Book) => {
+    const directUrl = `https://create.allforedu.kr/curriculum/#/read/${book.id}`;
+    navigator.clipboard.writeText(directUrl);
+    setSaveToast(`'${book.title}' 열람 링크가 복사되었습니다! (서재에서 숨겨져 있어도 이 링크로 누구나 바로 열람 가능)`);
+    setTimeout(() => setSaveToast(null), 3500);
   };
 
   // Navigate to Library with auto-save
@@ -421,23 +430,30 @@ export const AdminDashboard: React.FC = () => {
 
                       {/* Publish Switch */}
                       <td className="py-3 px-4">
-                        <button
-                          onClick={() =>
-                            togglePublishMutation.mutate({
-                              id: book.id,
-                              nextStatus: !isPub,
-                            })
-                          }
-                          disabled={togglePublishMutation.isPending}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold transition ${
+                        <div className="flex flex-col items-start gap-1">
+                          <button
+                            onClick={() =>
+                              togglePublishMutation.mutate({
+                                id: book.id,
+                                nextStatus: !isPub,
+                              })
+                            }
+                            disabled={togglePublishMutation.isPending}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold transition ${
                             isPub
-                              ? 'bg-[#eaf9f2] text-[#4aab82] hover:bg-[#d8f5e7]'
-                              : 'bg-[#f4f6fb] text-[#a0a9ba] hover:bg-[#e4eaf5]'
-                          }`}
-                        >
-                          {isPub ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                          {isPub ? '열람 가능' : '비공개'}
-                        </button>
+                                ? 'bg-[#eaf9f2] text-[#4aab82] hover:bg-[#d8f5e7]'
+                                : 'bg-[#fff0e3] text-[#f5a623] hover:bg-[#ffe6d1]'
+                            }`}
+                          >
+                            {isPub ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                            {isPub ? '열람 가능' : '숨김(비공개)'}
+                          </button>
+                          {!isPub && (
+                            <span className="text-[10px] text-[#f5a623] font-bold">
+                              ※ 링크로 열람 가능
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Date */}
@@ -448,6 +464,13 @@ export const AdminDashboard: React.FC = () => {
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => handleCopyDirectLink(book)}
+                            className="p-1.5 text-[#4aab82] hover:bg-[#eaf9f2] rounded-[9px] transition"
+                            title="직접 열람 링크 복사 (서재에서 숨겨져 있어도 이 링크로 누구나 바로 열람 가능)"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => handleOpenPreview(book)}
                             className="p-1.5 text-[#687fe0] hover:bg-[#eaf2ff] rounded-[9px] transition"

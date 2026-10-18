@@ -67,6 +67,16 @@ export const Header: React.FC = () => {
             <ExternalLink className="w-3.5 h-3.5 text-[#687fe0]" />
           </a>
 
+          <a
+            href="https://create.allforedu.kr/curriculum/#/read/create-doc-1"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-[13px] bg-[#eef3ff] hover:bg-[#dfe9ff] text-[#4d63be] hover:text-[#324596] text-xs font-extrabold border border-[#d2defc] transition shadow-xs"
+            title="CREATE 모형 수업설계 길잡이 전자책 열람"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-[#526bdb]" />
+            <span className="hidden sm:inline">수업설계</span>
+            <span>길잡이</span>
+          </a>
+
           {isAdmin ? (
             <Link
               to="/"
