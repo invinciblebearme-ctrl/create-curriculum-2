@@ -28,15 +28,24 @@ export const Header: React.FC = () => {
           className="flex items-center gap-3 group"
           title="create.allforedu.kr 메인 사이트로 돌아가기"
         >
-          <div className="w-[43px] h-[43px] rounded-[14px] bg-[#e2eaff] text-[#6b7fe0] flex items-center justify-center text-xl font-black shadow-sm group-hover:scale-105 transition-transform duration-200">
-            <Palette className="w-5 h-5 text-[#6b7fe0]" />
+          <div className="w-[44px] h-[44px] rounded-[15px] bg-[#ecf2fe] text-[#4865d4] flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform duration-200">
+            <svg
+              className="w-[22px] h-[22px] text-[#4865d4]"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+            >
+              <path d="M12 3v18M3 12h18M5.64 5.64l12.72 12.72M5.64 18.36l12.72-12.72" />
+            </svg>
           </div>
           <div className="text-left">
-            <strong className="text-[20px] font-extrabold tracking-[0.5px] text-[#374f7e] block leading-tight group-hover:text-[#687fe0] transition-colors">
-              CREATE
+            <strong className="text-[19px] sm:text-[20px] font-extrabold tracking-[0.8px] text-[#2a4279] block leading-tight group-hover:text-[#4865d4] transition-colors">
+              AI DIGITAL
             </strong>
-            <small className="block text-[9.5px] font-bold tracking-[1.6px] text-[#8b9ab7] mt-0.5">
-              연구학교 성과 공유 플랫폼 · 3D 교과전담 서재
+            <small className="block text-[9.5px] font-bold tracking-[2.2px] text-[#7d92b6] mt-0.5">
+              RESEARCH SCHOOL
             </small>
           </div>
         </a>

@@ -71,7 +71,7 @@ export const LibraryPage: React.FC = () => {
           <div className="relative z-10 max-w-2xl mx-auto">
             {/* Eyebrow Badge */}
             <span className="inline-block text-[11px] font-black tracking-[1.4px] text-[#6378b3] bg-white/70 border border-white rounded-full px-4 py-2 shadow-sm mb-4">
-              CREATE 모형 연구학교 · 성과공유 3D 서재 [교과전담 수업지도안]
+              AI DIGITAL 활용 연구학교 · 성과공유 3D 서재 [교과전담 수업지도안]
             </span>
 
             {/* Hero Title */}
@@ -148,7 +148,7 @@ export const LibraryPage: React.FC = () => {
               연구학교 교수학습 제작자료 <span className="text-[#e3a7d1]">✦</span>
             </h2>
             <p className="text-[13px] text-[#8996aa]">
-              CREATE 모형 기반 단원 설계안 모음입니다.
+              CREATE 모형을 적용한 교과전담 수업지도안을 전자책 형태로 살펴봅니다.
             </p>
           </div>
 
@@ -235,9 +235,6 @@ export const LibraryPage: React.FC = () => {
             🎨
           </div>
           <div className="flex-1 text-center sm:text-left">
-            <h3 className="text-[18px] font-black text-[#34415c] mb-1">
-              CREATE 모형 연구학교 온라인 플랫폼
-            </h3>
             <p className="text-[12.5px] text-[#7c8ba6] leading-[1.8]">
               본 플랫폼의 모든 단원설계안과 수업 지도안은 교실 실증수업을 바탕으로 제작되었습니다.
               더 많은 자료와 연구학교 실천 사례는 공식 성과공유 플랫폼에서 확인하실 수 있습니다.
